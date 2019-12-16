@@ -15,6 +15,8 @@ const opcodes = {
   END: 99,
 };
 
+const limit = 99;
+
 function runIntcode(input) {
   const program = input.slice();
   for (let i = 0; i < program.length; i += 4) {
@@ -47,8 +49,8 @@ function restoreState(input) {
 }
 
 function findNounAndVerb(input, output) {
-  for (let noun = 0; noun <= 99; noun++) {
-    for (let verb = 0; verb <= 99; verb++) {
+  for (let noun = 0; noun <= limit; noun++) {
+    for (let verb = 0; verb <= limit; verb++) {
       const program = getState(input.slice(), noun, verb);
       if (runIntcode(program) === output) {
         console.log({ noun, verb });

@@ -18,11 +18,11 @@ func main() {
 	fmt.Println(totalFuelReq)
 }
 
-func calculate(m int64) int64 {
+func calculate(m int) int {
 	return m/3 - 2
 }
 
-func calculateFuelReq(remaining int64) int64 {
+func calculateFuelReq(remaining int) int {
 	fuel := calculate(remaining)
 	if fuel <= 0 {
 		return 0
@@ -31,10 +31,10 @@ func calculateFuelReq(remaining int64) int64 {
 	}
 }
 
-func findTotalFuelReq(massList []string) int64 {
-	var total int64
+func findTotalFuelReq(massList []string) int {
+	var total int
 	for _, m := range massList {
-		v, err := strconv.ParseInt(m, 10, 0)
+		v, err := strconv.Atoi(m)
 		if err != nil {
 			panic(err)
 		}
