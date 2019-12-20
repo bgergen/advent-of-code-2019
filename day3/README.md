@@ -1,1 +1,1 @@
-This approach is shamelessly cribbed from [this AoC subreddit post](https://www.reddit.com/r/adventofcode/comments/e5bz2w/2019_day_3_solutions/f9iz68s?utm_source=share&utm_medium=web2x).
+This approach is shamelessly cribbed from [this r/adventofcode post](https://www.reddit.com/r/adventofcode/comments/e5bz2w/2019_day_3_solutions/f9iz68s?utm_source=share&utm_medium=web2x).

@@ -3,12 +3,19 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
 func main() {
-	data, err := ioutil.ReadFile("../input.txt")
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	data, err := ioutil.ReadFile(filepath.Join(exPath, "../input.txt"))
 	if err != nil {
 		panic(err)
 	}
