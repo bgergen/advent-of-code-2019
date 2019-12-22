@@ -61,6 +61,5 @@ function fewestCombinedSteps(wires) {
 
 // Part 1
 console.log(closestIntersection(input));
-
 // Part 2
 console.log(fewestCombinedSteps(input));
