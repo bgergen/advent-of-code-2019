@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const input = fs
+const myInput = fs
   .readFileSync(path.join(__dirname, '../input.txt'))
   .toString()
   .split(',')
@@ -62,7 +62,7 @@ function findNounAndVerb(input, output) {
 }
 
 // Part 1
-console.log(runIntcode(restoreState(input)));
+console.log(runIntcode(restoreState(myInput)));
 
 // Part 2
-console.log(findNounAndVerb(input, output));
+console.log(findNounAndVerb(myInput, output));
