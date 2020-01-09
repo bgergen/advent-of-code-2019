@@ -53,8 +53,6 @@ IntComp.prototype.runDiagnostic = function(inputs) {
 
     this.pointer += numAdvance;
   }
-
-  throw new Error('Did not receive end code');
 };
 
 IntComp.prototype.getParams = function(opcode, paramModes) {
