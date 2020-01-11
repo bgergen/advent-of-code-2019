@@ -48,7 +48,7 @@ IntComp.prototype.runDiagnostic = function(inputs) {
       case IntComp.opcodeVals.END:
         return IntComp.HALT;
       default:
-        throw new Error(`Something went wrong at opcode ${opcode}, index ${i}`);
+        throw new Error(`Something went wrong at opcode ${opcode}`);
     }
 
     this.pointer += numAdvance;
