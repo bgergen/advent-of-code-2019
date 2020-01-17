@@ -46,13 +46,23 @@ func main() {
 		inputData = append(inputData, v)
 	}
 
-	max, err := findMaxOutput(inputData, 0, 4)
+	inputDataCopy := make([]int, len(inputData))
+	copy(inputDataCopy, inputData)
+
+	max, err := findMaxOutput(inputDataCopy, 0, 4)
+	if err != nil {
+		panic(err)
+	}
+
+	maxFeedback, err := findMaxOutputFeedbackLoop(inputData, 5, 9)
 	if err != nil {
 		panic(err)
 	}
 
 	// Part 1
 	fmt.Println(max)
+	// Part 2
+	fmt.Println(maxFeedback)
 }
 
 type Params struct {
@@ -61,7 +71,7 @@ type Params struct {
 	numAdvance int
 }
 
-func (ic *IntComp) runDiagnostic(inputs ...int) (int, string, error) {
+func (ic *IntComp) runDiagnostic(i chan int) (int, string) {
 	for {
 		instr := ic.program[ic.pointer]
 		codes := strconv.Itoa(instr)
@@ -76,12 +86,10 @@ func (ic *IntComp) runDiagnostic(inputs ...int) (int, string, error) {
 		case Multiply:
 			ic.mult(p.params)
 		case Input:
-			i := inputs[0]
-			inputs = inputs[1:]
-			ic.input(i)
+			ic.input(<-i)
 		case Output:
 			ic.pointer += p.numAdvance
-			return p.params[0], "", nil
+			return p.params[0], ""
 		case JumpTrue, JumpFalse:
 			if p.shouldJump {
 				ic.jump(p.params[1])
@@ -91,9 +99,9 @@ func (ic *IntComp) runDiagnostic(inputs ...int) (int, string, error) {
 		case Equals:
 			ic.equals(p.params)
 		case End:
-			return 0, Halt, nil
+			return 0, Halt
 		default:
-			return 0, "", fmt.Errorf("Something went wrong at opcode %d", o)
+			panic(fmt.Errorf("Something went wrong at opcode %d", o))
 		}
 
 		ic.pointer += p.numAdvance
@@ -217,7 +225,8 @@ func findMaxOutput(p []int, start, stop int) (int, error) {
 	settings := getPhaseSettings(makeRange(start, stop)...)
 
 	for _, s := range settings {
-		amps := make([]IntComp, stop-start+1)
+		numAmps := stop - start + 1
+		amps := make([]IntComp, numAmps)
 		for i := range amps {
 			pCopy := make([]int, len(p))
 			copy(pCopy, p)
@@ -227,14 +236,83 @@ func findMaxOutput(p []int, start, stop int) (int, error) {
 			}
 		}
 
+		inputs := make([]chan int, numAmps)
+		for i := range inputs {
+			inputs[i] = make(chan int, 100)
+			inputs[i] <- s[i]
+			if i == 0 {
+				inputs[i] <- 0
+			}
+		}
+
 		var output int
 		for i, a := range amps {
-			var str string
-			var err error
-			output, str, err = a.runDiagnostic(s[i], output)
-			if err != nil || str != "" {
-				return 0, err
+			nextInput, _ := a.runDiagnostic(inputs[i])
+			if i == numAmps-1 {
+				output = nextInput
+			} else {
+				inputs[i+1] <- nextInput
 			}
+		}
+
+		max = math.Max(float64(output), max)
+	}
+
+	return int(max), nil
+}
+
+func findMaxOutputFeedbackLoop(p []int, start, stop int) (int, error) {
+	var max float64
+	numAmps := stop - start + 1
+	settings := getPhaseSettings(makeRange(start, stop)...)
+
+	for _, s := range settings {
+		amps := make([]IntComp, numAmps)
+		for i := range amps {
+			pCopy := make([]int, len(p))
+			copy(pCopy, p)
+			amps[i] = IntComp{
+				program: pCopy,
+				pointer: 0,
+			}
+		}
+
+		inputs := make([]chan int, numAmps)
+		for i := range inputs {
+			inputs[i] = make(chan int, 100)
+			inputs[i] <- s[i]
+			if i == 0 {
+				inputs[i] <- 0
+			}
+		}
+
+		var output int
+		halt := false
+		i := 0
+		for !halt {
+			n := make(chan int)
+			h := make(chan bool)
+			nextAmp := (i + 1) % numAmps
+
+			go func(idx int) {
+				nextInput, end := amps[idx].runDiagnostic(inputs[idx])
+				if end == Halt {
+					h <- true
+				} else {
+					n <- nextInput
+				}
+			}(i)
+
+			select {
+			case next := <-n:
+				if i == numAmps-1 {
+					output = next
+				}
+				inputs[nextAmp] <- next
+			case end := <-h:
+				halt = end
+			}
+			i = nextAmp
 		}
 
 		max = math.Max(float64(output), max)
